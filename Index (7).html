@@ -1,0 +1,1330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ThinkSound: Make Your Videos Speak.</title>
+    <!-- Favicon - يمكنك تغيير رابط الصورة هنا -->
+    <link rel="icon" href="images/favicon.png">
+    <!-- Use the Inter font for a modern, clean look -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #ffffff; /* لون الخلفية الجديد */
+        }
+        .gradient-text {
+            background-image: linear-gradient(90deg, #6366f1, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .gradient-bg {
+            background-image: linear-gradient(90deg, #6366f1, #a855f7);
+        }
+        .bg-card {
+            background-color: #f3f4f6; /* لون البطاقة الجديد */
+        }
+        .video-placeholder {
+            position: relative;
+            background-size: cover;
+            background-position: center;
+            border-radius: 1.5rem; /* rounded-3xl */
+            aspect-ratio: 16 / 9; /* Maintain a 16:9 aspect ratio */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            overflow: hidden;
+            width: 100%;
+        }
+        .video-placeholder::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            transition: background 0.3s ease;
+        }
+        .video-placeholder:hover::after {
+            background: rgba(0, 0, 0, 0.6);
+        }
+        .play-button {
+            position: relative;
+            z-index: 10;
+            width: 4rem;
+            height: 4rem;
+            background-color: rgba(255, 255, 255, 0.2);
+            border: 2px solid white;
+            border-radius: 9999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.3s ease;
+        }
+        .video-placeholder:hover .play-button {
+            transform: scale(1.1);
+        }
+        .play-button svg {
+            color: white;
+        }
+        .interactive-example-row {
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        .interactive-example-row:hover {
+            background-color: #e5e7eb; /* bg-gray-200 */
+        }
+        /* Testimonials Carousel Styling */
+        .carousel-container {
+            position: relative;
+            overflow: hidden;
+        }
+        .carousel-track {
+            display: flex;
+            width: fit-content;
+            animation: scroll-left 25s linear infinite;
+        }
+        .carousel-item {
+            flex: 0 0 auto;
+            width: 100%;
+            padding: 1rem;
+        }
+        @media (min-width: 768px) {
+            .carousel-item {
+                width: 50%;
+            }
+        }
+        @media (min-width: 1024px) {
+            .carousel-item {
+                width: 33.333333%;
+            }
+        }
+        @keyframes scroll-left {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(calc(-50% - 1rem)); }
+        }
+        .star-rating {
+            color: #ffc107; /* golden color for stars */
+        }
+        /* Loading spinner */
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: #6366f1;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Modal styling */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background-color: #f3f4f6; /* لون البطاقة الجديد */
+            padding: 2rem;
+            border-radius: 1.5rem;
+            border: 1px solid #d1d5db; /* لون الحدود الجديد */
+            width: 90%;
+            max-width: 800px;
+            position: relative;
+        }
+        .modal-close {
+            color: #6b7280;
+            position: absolute;
+            top: 1rem;
+            right: 1.5rem;
+            font-size: 2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .modal-close:hover,
+        .modal-close:focus {
+            color: black;
+        }
+
+        /* Animation for the sound waves */
+        @keyframes wave {
+            0% { transform: scaleY(0.4); }
+            50% { transform: scaleY(1); }
+            100% { transform: scaleY(0.4); }
+        }
+        .sound-wave-icon {
+            display: flex;
+            align-items: center;
+            height: 24px;
+            width: 24px;
+        }
+        .sound-wave-icon .bar {
+            background: linear-gradient(90deg, #6366f1, #a855f7);
+            width: 3px;
+            margin: 0 1px;
+            border-radius: 2px;
+            transform-origin: bottom;
+            animation: wave 1s infinite ease-in-out;
+        }
+        .sound-wave-icon .bar:nth-child(1) { animation-delay: 0.1s; }
+        .sound-wave-icon .bar:nth-child(2) { animation-delay: 0.2s; }
+        .sound-wave-icon .bar:nth-child(3) { animation-delay: 0.3s; }
+        .sound-wave-icon .bar:nth-child(4) { animation-delay: 0.4s; }
+        .social-link {
+            transition: color 0.2s ease, transform 0.2s ease;
+        }
+        .social-link:hover {
+            color: #000;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body class="bg-white text-gray-800 antialiased">
+
+    <!-- Modal for video viewing -->
+    <div id="videoModal" class="modal flex">
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
+            <div class="aspect-w-16 aspect-h-9">
+                <video id="modalVideo" class="w-full h-full rounded-lg" controls autoplay></video>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main content wrapper -->
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+
+        <!-- Navigation Bar -->
+        <header class="py-6 flex justify-between items-center sticky top-0 z-50 bg-white/70 backdrop-blur-sm">
+            <a href="#" class="text-2xl font-bold gradient-text flex items-center space-x-2">
+                <!-- أيقونة الموجات المتحركة -->
+                <div class="sound-wave-icon">
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                </div>
+                <span>ThinkSound</span>
+            </a>
+            <nav class="hidden md:flex space-x-8 text-sm font-semibold text-gray-600">
+                <a href="#demo-section" class="hover:text-black transition-colors duration-200">Demo</a>
+                <a href="#" class="hover:text-black transition-colors duration-200" id="watch-demo-link">Watch Demo</a>
+                <a href="#testimonials" class="hover:text-black transition-colors duration-200">Testimonials</a>
+                <a href="#faq" class="hover:text-black transition-colors duration-200">FAQ</a>
+            </nav>
+            <!-- Mobile Menu button -->
+            <button class="md:hidden p-2 rounded-lg text-gray-600 hover:text-black transition-colors duration-200">
+                <svg xmlns="http://www.w3.org/2d000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                </svg>
+            </button>
+        </header>
+
+        <main>
+            <!-- Hero Section with human-written content -->
+            <section class="text-center py-20 md:py-32">
+                <h1 class="text-3xl md:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight gradient-text mb-4">
+                    ThinkSound: Make Your Videos Speak.
+                </h1>
+                <p class="text-lg md:text-xl lg:text-2xl text-gray-600 mb-8 max-w-3xl mx-auto">
+                    This isn't just about AI technology; it's about the future of content creation. Our new platform turns your silent footage into a complete sonic world: sound, dialogue, and effects, all perfectly in sync. It's the ultimate video to audio content tool.
+                </p>
+                <div class="space-x-4">
+                    <button class="px-8 py-3 rounded-full text-white font-semibold transition-transform duration-200 hover:scale-105 shadow-xl gradient-bg" id="hero-watch-button">
+                        Watch It Now
+                    </button>
+                </div>
+            </section>
+
+            <!-- ThinkSound Demo Section -->
+            <section id="demo-section" class="py-16">
+                <div class="bg-card rounded-3xl p-8 md:p-12 shadow-lg border border-gray-300">
+                    <h2 class="text-xl md:text-3xl font-bold mb-4 text-center text-gray-800">ThinkSound Demo</h2>
+                    <p class="text-gray-600 text-center mb-8 max-w-2xl mx-auto">
+                        This is a non-profit tool for generating sound from video. Upload a video, caption, or CoT to start the video conversion. For an enhanced experience, we automatically merge the generated audio with your original silent video. (Note: Flexible audio generation lengths are supported.)
+                    </p>
+
+                    <div class="flex flex-col md:flex-row space-y-8 md:space-y-0 md:space-x-8">
+                        <!-- Upload Section -->
+                        <div id="video-upload-area" class="flex-1 flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-400 rounded-lg cursor-pointer">
+                            <i class="fas fa-cloud-upload-alt text-4xl mb-2 text-gray-500"></i>
+                            <p class="text-gray-600">Drag & Drop Video Here</p>
+                            <p class="text-sm text-gray-500">or</p>
+                            <button id="upload-btn" class="mt-2 px-6 py-2 rounded-full font-semibold transition-transform duration-200 hover:scale-105 bg-gray-200 text-gray-800 hover:bg-gray-300">
+                                Click to Upload
+                            </button>
+                            <input type="file" class="hidden" id="video-upload-input" accept="video/mp4,video/mov,video/avi">
+                        </div>
+
+                        <!-- Result Section -->
+                        <div class="flex-1">
+                            <div class="bg-gray-200 p-4 rounded-lg mb-4">
+                                <h3 class="text-sm font-semibold text-gray-600">Status</h3>
+                                <div id="status-message" class="mt-2 text-gray-800">Ready to upload...</div>
+                            </div>
+                            <!-- New video display area -->
+                            <div class="bg-gray-200 p-4 rounded-lg flex-1 h-48 flex items-center justify-center relative">
+                                <div id="video-display" class="w-full h-full bg-gray-300 rounded-lg overflow-hidden flex items-center justify-center text-gray-500">
+                                    <i class="fas fa-video text-5xl"></i>
+                                </div>
+                                <audio id="generated-audio" class="hidden"></audio>
+                            </div>
+                            <div class="flex items-center space-x-2 justify-center mt-4">
+                                <i class="fas fa-share-alt text-gray-600"></i>
+                                <a href="#" class="text-gray-800 font-semibold hover:underline">Share via Link</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Input Fields and Buttons -->
+                    <div class="mt-8 grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div>
+                            <label for="caption" class="block text-sm font-medium text-gray-600">Caption (optional)</label>
+                            <input type="text" id="caption" placeholder="can be empty" class="mt-1 block w-full rounded-md bg-gray-200 border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 shadow-sm text-gray-800 p-2">
+                        </div>
+                        <div>
+                            <label for="cot-description" class="block text-sm font-medium text-gray-600">CoT Description (optional)</label>
+                            <input type="text" id="cot-description" placeholder="can be empty" class="mt-1 block w-full rounded-md bg-gray-200 border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 shadow-sm text-gray-800 p-2">
+                        </div>
+                        <div class="flex items-end justify-center md:justify-end space-x-4 col-span-2 lg:col-span-1 mt-4">
+                            <button id="clear-btn" class="px-6 py-2 rounded-full font-semibold transition-transform duration-200 hover:scale-105 bg-gray-200 text-gray-800 hover:bg-gray-300">
+                                Clear
+                            </button>
+                            <button id="submit-btn" class="px-8 py-2 rounded-full font-semibold transition-transform duration-200 hover:scale-105 gradient-bg text-white">
+                                Submit
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Examples Section (Table-like structure) -->
+                    <div class="mt-12">
+                        <h3 class="text-lg font-bold mb-4 text-gray-800">Examples</h3>
+                        <div class="bg-gray-200 rounded-xl overflow-hidden border border-gray-300">
+                            <!-- Table Header -->
+                            <div class="grid grid-cols-3 gap-4 p-4 text-left font-semibold text-gray-600 border-b border-gray-300 hidden md:grid">
+                                <span>Upload Video</span>
+                                <span>Caption (optional)</span>
+                                <span>CoT Description (optional)</span>
+                            </div>
+                            <!-- Table Row 1 -->
+                            <div class="interactive-example-row grid grid-cols-1 md:grid-cols-3 gap-4 items-center p-4">
+                                <div class="flex items-center space-x-4">
+                                    <!-- استبدل مسار هذه الصورة المصغرة -->
+                                    <div class="flex-shrink-0 w-16 h-16 rounded-lg bg-gray-300" style="background-image: url('images/baby_pacifier_thumbnail.jpg'); background-size: cover;"></div>
+                                    <div class="md:hidden">
+                                        <h4 class="font-semibold text-gray-800">Gentle Sucking Sounds From the Pacifier</h4>
+                                    </div>
+                                </div>
+                                <div class="hidden md:block text-gray-800">Gentle Sucking Sounds From the Pacifier</div>
+                                <div class="text-gray-600">Begin by creating a soft, steady background of light pacifier suckling. Add subtle, breathy rhythms to mimic a newborn's gentle mouth movements. Keep the sound smooth, natural, and soothing.</div>
+                            </div>
+                            <!-- Table Row 2 -->
+                            <div class="interactive-example-row grid grid-cols-1 md:grid-cols-3 gap-4 items-center p-4 border-t border-gray-300">
+                                <div class="flex items-center space-x-4">
+                                    <!-- استبدل مسار هذه الصورة المصغرة -->
+                                    <div class="flex-shrink-0 w-16 h-16 rounded-lg bg-gray-300" style="background-image: url('images/guitar_playing_thumbnail.jpg'); background-size: cover;"></div>
+                                    <div class="md:hidden">
+                                        <h4 class="font-semibold text-gray-800">Strings Humming and Buzzing.</h4>
+                                    </div>
+                                </div>
+                                <div class="hidden md:block text-gray-800">Strings Humming and Buzzing.</div>
+                                <div class="text-gray-600">Harmoniously, with Fingers Sliding and Pressing Strings. Start with acoustic guitar strings humming and buzzing. Include the sounds of fingers sliding and pressing the strings to match a riff. Add slight attack and decay variations to mimic playing. Mix string and finger sounds for a realistic guitar performance.</div>
+                            </div>
+                            <!-- Table Row 3 -->
+                            <div class="interactive-example-row grid grid-cols-1 md:grid-cols-3 gap-4 items-center p-4 border-t border-gray-300">
+                                <div class="flex items-center space-x-4">
+                                    <!-- استبدل مسار هذه الصورة المصغرة -->
+                                    <div class="flex-shrink-0 w-16 h-16 rounded-lg bg-gray-300" style="background-image: url('images/man_typing_thumbnail.jpg'); background-size: cover;"></div>
+                                    <div class="md:hidden">
+                                        <h4 class="font-semibold text-gray-800">Metal Keys Clattering Against Metal Body</h4>
+                                    </div>
+                                </div>
+                                <div class="hidden md:block text-gray-800">Metal Keys Clattering Against Metal Body</div>
+                                <div class="text-gray-600">Begin with the ambiance of a quiet newsroom room with a single person. Add the rhythmic sound of an old typewriter, focusing on the sharp metallic clatter of keys striking the body. Keep the texture continuous, emphasizing the tactile, metallic feedback.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Main Video Demo Section (Restored) -->
+            <section class="py-16">
+                <button id="main-video-demo-btn" class="md:w-3/4 mx-auto w-full video-placeholder relative" data-video-url="videos/main_demo.mp4" style="background-image: url('https://placehold.co/1920x1080/a855f7/ffffff?text=ThinkSound+Demo');">
+                    <div class="play-button">
+                        <svg xmlns="http://www.w3.org/2d000/svg" fill="currentColor" class="w-8 h-8" viewBox="0 0 24 24">
+                            <path d="M8 5v14l11-7z"/>
+                        </svg>
+                    </div>
+                </button>
+            </section>
+
+            <!-- What is ThinkSound Section -->
+            <section id="what-is-thinksound" class="py-16">
+                <div class="bg-card rounded-3xl p-8 md:p-12 shadow-lg border border-gray-300">
+                    <h2 class="text-xl md:text-3xl font-bold mb-4 gradient-text text-gray-800">What is ThinkSound?</h2>
+                    <p class="text-gray-600 leading-relaxed text-sm md:text-base">
+                        ThinkSound is the ultimate solution for modern creators. It’s an advanced yet easy-to-use AI system that turns your videos into professional audio. Our revolutionary platform combines smart tech that lets it see and understand what’s happening in your video, process language, and create sounds from scratch. The result? Audio that blends seamlessly with every frame. This is a powerful video to audio content tool for sound generation.
+                    </p>
+                </div>
+            </section>
+
+            <!-- Here's What ThinkSound Can Do for You Section (New Position) -->
+            <section id="features" class="py-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-center mb-12 text-gray-800">
+                    Here's What ThinkSound Can Do for You:
+                </h2>
+                <div class="grid md:grid-cols-2 lg:grid-cols-2 gap-8">
+                    <!-- Feature Card 1: Video Understanding -->
+                    <div class="bg-card rounded-3xl p-8 shadow-lg border border-gray-300 flex flex-col items-start space-y-4">
+                        <div class="flex items-center space-x-4">
+                            <div class="flex items-center justify-center w-12 h-12 rounded-full gradient-bg">
+                                <i class="fas fa-video text-white text-xl"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-800">Video Understanding & Analysis</h3>
+                        </div>
+                        <p class="text-gray-600 text-sm md:text-base">
+                            Ever wonder how we know what sound to add? Well, our AI can see! It analyzes your video frame-by-frame, understanding the context, object interactions, and even human emotions to create sound that fits the scene perfectly.
+                        </p>
+                    </div>
+                    <!-- Feature Card 2: Smart Sound -->
+                    <div class="bg-card rounded-3xl p-8 shadow-lg border border-gray-300 flex flex-col items-start space-y-4">
+                        <div class="flex items-center space-x-4">
+                            <div class="flex items-center justify-center w-12 h-12 rounded-full gradient-bg">
+                                <i class="fas fa-volume-up text-white text-xl"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-800">Intelligent Sound Synthesis</h3>
+                        </div>
+                        <p class="text-gray-600 text-sm md:text-base">
+                            We don't just add random noise. Our sophisticated neural networks generate high-fidelity sounds and realistic ambient environments. Whether your scene is a tranquil forest or a bustling city, you'll get the perfect soundscape. This is a top-tier audio generation feature.
+                        </p>
+                    </div>
+                    <!-- Feature Card 3: Speech Generation -->
+                    <div class="bg-card rounded-3xl p-8 shadow-lg border border-gray-300 flex flex-col items-start space-y-4">
+                        <div class="flex items-center space-x-4">
+                            <div class="flex items-center justify-center w-12 h-12 rounded-full gradient-bg">
+                                <i class="fas fa-microphone-alt text-white text-xl"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-800">Speech & Voice Generation</h3>
+                        </div>
+                        <p class="text-gray-600 text-sm md:text-base">
+                            Need dialogue? Our revolutionary video conversion to speech tech can create natural dialogue and narration from your video. It understands facial expressions and emotional context to give you human-like speech that perfectly aligns with the visuals. It's a true video to automatic dialogue converter.
+                        </p>
+                    </div>
+                    <!-- Feature Card 4: Perfect Sync -->
+                    <div class="bg-card rounded-3xl p-8 shadow-lg border border-gray-300 flex flex-col items-start space-y-4">
+                        <div class="flex items-center space-x-4">
+                            <div class="flex items-center justify-center w-12 h-12 rounded-full gradient-bg">
+                                <i class="fas fa-sync-alt text-white text-xl"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-800">Multimodal Synchronization</h3>
+                        </div>
+                        <p class="text-gray-600 text-sm md:text-base">
+                            The secret is timing. ThinkSound ensures precise temporal alignment between your visuals and audio. Our advanced AI tools and algorithms maintain perfect video-sound coherence across different frame rates and video formats.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ThinkSound: The Advanced Magic Behind the Scenes Section -->
+            <section id="think-sound-magic" class="py-16 text-center">
+                <h2 class="text-3xl md:text-4xl font-bold text-center mb-4 text-gray-800">ThinkSound: The Advanced Magic Behind the Scenes.</h2>
+                <p class="text-lg md:text-xl lg:text-2xl text-gray-600 mb-12 max-w-3xl mx-auto">
+                    Want to know how to create sound from a video? It's all thanks to our revolutionary AI technology. We turn silent footage into powerful, immersive sonic experiences with unparalleled accuracy and creative control.
+                </p>
+
+                <!-- From Video to Sound -->
+                <div class="bg-card rounded-3xl p-8 md:p-12 shadow-lg border border-gray-300 mb-16">
+                    <h3 class="text-2xl font-bold mb-4 text-gray-800">From Video to Sound, Magically.</h3>
+                    <p class="text-gray-600 leading-relaxed mb-8">
+                        Let's turn that visual story into an auditory masterpiece. Our AI analyzes everything in your video—from motion and objects to the environment itself. It then generates perfectly synchronized ambient sounds, realistic acoustics, and atmospheric soundscapes that give your footage breathtaking life and depth.
+                    </p>
+                    <button class="px-8 py-3 rounded-full text-white font-semibold transition-transform duration-200 hover:scale-105 shadow-xl gradient-bg view-demo-btn" data-video-url="videos/magic_video1.mp4">
+                        Try ThinkSound
+                    </button>
+                    <div class="md:w-3/4 mx-auto w-full video-placeholder mt-8" style="background-image: url('https://placehold.co/1920x1080/a855f7/ffffff?text=Video+Placeholder');">
+                        <div class="play-button">
+                            <svg xmlns="http://www.w3.org/2d000/svg" fill="currentColor" class="w-8 h-8" viewBox="0 0 24 24">
+                                <path d="M8 5v14l11-7z"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dialogue that Feels Real -->
+                <div class="bg-card rounded-3xl p-8 md:p-12 shadow-lg border border-gray-300 mb-16">
+                    <h3 class="text-2xl font-bold mb-4 text-gray-800">Dialogue that Feels Real.</h3>
+                    <p class="text-gray-600 leading-relaxed mb-8">
+                        Our cutting-edge video to automatic dialogue converter technology doesn't just create words; it creates natural, human-like dialogue and narration. The AI understands facial expressions and lip movements, matching emotional context with perfect lip synchronization and natural speech patterns.
+                    </p>
+                    <button class="px-8 py-3 rounded-full text-white font-semibold transition-transform duration-200 hover:scale-105 shadow-xl gradient-bg view-demo-btn" data-video-url="videos/magic_video2.mp4">
+                        Create with ThinkSound
+                    </button>
+                    <div class="md:w-3/4 mx-auto w-full video-placeholder mt-8" style="background-image: url('https://placehold.co/1920x1080/a855f7/ffffff?text=Video+Placeholder');">
+                        <div class="play-button">
+                            <svg xmlns="http://www.w3.org/2d000/svg" fill="currentColor" class="w-8 h-8" viewBox="0 0 24 24">
+                                <path d="M8 5v14l11-7z"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Your Creative Control, Amplified -->
+                <div class="bg-card rounded-3xl p-8 md:p-12 shadow-lg border border-gray-300">
+                    <h3 class="text-2xl font-bold mb-4 text-gray-800">Your Creative Control, Amplified.</h3>
+                    <p class="text-gray-600 leading-relaxed mb-8">
+                        Don't want to leave it all to the AI? We love that! You can guide our system with text instructions, reference sounds, and style preferences. This "multimodal" approach gives you precise control over every sonic detail, ensuring professional-quality results for film, gaming, and multimedia projects.
+                    </p>
+                    <button class="px-8 py-3 rounded-full text-white font-semibold transition-transform duration-200 hover:scale-105 shadow-xl gradient-bg view-demo-btn" data-video-url="videos/magic_video3.mp4">
+                        Design with ThinkSound
+                    </button>
+                    <div class="md:w-3/4 mx-auto w-full video-placeholder mt-8" style="background-image: url('https://placehold.co/1920x1080/a855f7/ffffff?text=Video+Placeholder');">
+                        <div class="play-button">
+                            <svg xmlns="http://www.w3.org/2d000/svg" fill="currentColor" class="w-8 h-8" viewBox="0 0 24 24">
+                                <path d="M8 5v14l11-7z"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Testimonials Section -->
+            <section id="testimonials" class="py-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-center mb-12 text-gray-800">What Professionals Say About ThinkSound</h2>
+                <div class="carousel-container relative">
+                    <div class="carousel-track flex space-x-8">
+                        <!-- Testimonial 1 -->
+                        <div class="carousel-item bg-card rounded-xl p-8 shadow-lg border border-gray-300 text-center">
+                            <div class="flex items-center justify-center mb-4">
+                                <img src="images/testimonial_jane_doe.jpg" alt="Jane Doe" class="w-16 h-16 rounded-full mx-auto">
+                            </div>
+                            <div class="star-rating mb-2">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <p class="text-gray-600 mb-4">"ThinkSound has completely transformed our post-production workflow. The video to audio conversion saves us weeks of work, and the quality is absolutely stunning. We can now focus on creative storytelling while ThinkSound handles the technical magic."</p>
+                            <div class="font-bold text-gray-800">- Jane Doe, Filmmaker</div>
+                        </div>
+                        <!-- Testimonial 2 -->
+                        <div class="carousel-item bg-card rounded-xl p-8 shadow-lg border border-gray-300 text-center">
+                            <div class="flex items-center justify-center mb-4">
+                                <img src="images/testimonial_john_smith.jpg" alt="John Smith" class="w-16 h-16 rounded-full mx-auto">
+                            </div>
+                            <div class="star-rating mb-2">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star-half-alt"></i>
+                            </div>
+                            <p class="text-gray-600 mb-4">"The generated soundscapes are incredibly realistic and perfectly match the visual content. It feels like magic, seriously."</p>
+                            <div class="font-bold text-gray-800">- John Smith, Game Developer</div>
+                        </div>
+                        <!-- Testimonial 3 -->
+                        <div class="carousel-item bg-card rounded-xl p-8 shadow-lg border border-gray-300 text-center">
+                            <div class="flex items-center justify-center mb-4">
+                                <img src="images/testimonial_emily_jones.jpg" alt="Emily Jones" class="w-16 h-16 rounded-full mx-auto">
+                            </div>
+                            <div class="star-rating mb-2">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <p class="text-gray-600 mb-4">"ThinkSound's speech synthesis is a game-changer. It accurately captures the emotion and timing of the visuals, which is crucial for our projects."</p>
+                            <div class="font-bold text-gray-800">- Emily Jones, Content Creator</div>
+                        </div>
+                        <!-- Testimonial 4 -->
+                        <div class="carousel-item bg-card rounded-xl p-8 shadow-lg border border-gray-300 text-center">
+                            <div class="flex items-center justify-center mb-4">
+                                <img src="images/testimonial_david_chen.jpg" alt="David Chen" class="w-16 h-16 rounded-full mx-auto">
+                            </div>
+                            <div class="star-rating mb-2">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="far fa-star"></i>
+                            </div>
+                            <p class="text-gray-600 mb-4">"ThinkSound is the best tool I've ever used. The ease of use and the quality of the output are unmatched. It's a must-have for any content creator."</p>
+                            <div class="font-bold text-gray-800">- David Chen, Sound Designer</div>
+                        </div>
+                        <!-- Duplicate items for seamless loop -->
+                        <div class="carousel-item bg-card rounded-xl p-8 shadow-lg border border-gray-300 text-center">
+                            <div class="flex items-center justify-center mb-4">
+                                <img src="images/testimonial_jane_doe.jpg" alt="Jane Doe" class="w-16 h-16 rounded-full mx-auto">
+                            </div>
+                            <div class="star-rating mb-2">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <p class="text-gray-600 mb-4">"ThinkSound has completely transformed our post-production workflow. The video-to-sound generation saves us weeks of work, and the quality is absolutely stunning. We can now focus on creative storytelling while ThinkSound handles the technical magic."</p>
+                            <div class="font-bold text-gray-800">- Jane Doe, Filmmaker</div>
+                        </div>
+                        <div class="carousel-item bg-card rounded-xl p-8 shadow-lg border border-gray-300 text-center">
+                            <div class="flex items-center justify-center mb-4">
+                                <img src="images/testimonial_john_smith.jpg" alt="John Smith" class="w-16 h-16 rounded-full mx-auto">
+                            </div>
+                            <div class="star-rating mb-2">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star-half-alt"></i>
+                            </div>
+                            <p class="text-gray-600 mb-4">"The generated soundscapes are incredibly realistic and perfectly match the visual content. It feels like magic, seriously."</p>
+                            <div class="font-bold text-gray-800">- John Smith, Game Developer</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- FAQ Section -->
+            <section id="faq" class="py-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-center mb-8 text-gray-800">Frequently Asked Questions</h2>
+                <div class="space-y-4 max-w-4xl mx-auto">
+                    <!-- FAQ Item 1 -->
+                    <div class="bg-card rounded-xl shadow-lg border border-gray-300 overflow-hidden">
+                        <button class="w-full text-left py-4 px-6 focus:outline-none flex justify-between items-center group">
+                            <h3 class="font-semibold text-gray-800">What is ThinkSound and how does it work?</h3>
+                            <span class="transform transition-transform duration-300">
+                                <svg xmlns="http://www.w3.org/2d000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 text-gray-600">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                                </svg>
+                            </span>
+                        </button>
+                        <div class="faq-answer max-h-0 overflow-hidden transition-all duration-300 ease-in-out">
+                            <p class="p-6 text-gray-600 text-sm md:text-base">
+                                We're an AI platform that turns video conversion into sound. Our system analyzes your visual content to understand the context, then generates synchronized audio like ambient sounds, dialogue, and music that matches what you see.
+                            </p>
+                        </div>
+                    </div>
+                    <!-- FAQ Item 2 -->
+                    <div class="bg-card rounded-xl shadow-lg border border-gray-300 overflow-hidden">
+                        <button class="w-full text-left py-4 px-6 focus:outline-none flex justify-between items-center group">
+                            <h3 class="font-semibold text-gray-800">What is the best tool to convert video to audio?</h3>
+                            <span class="transform transition-transform duration-300">
+                                <svg xmlns="http://www.w3.org/2d000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 text-gray-600">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                                </svg>
+                            </span>
+                        </button>
+                        <div class="faq-answer max-h-0 overflow-hidden transition-all duration-300 ease-in-out">
+                            <p class="p-6 text-gray-600 text-sm md:text-base">
+                                ThinkSound is designed to be one of the best AI tools for converting video to audio. Our platform offers a seamless experience with high-quality, synchronized audio generation tailored to your video content.
+                            </p>
+                        </div>
+                    </div>
+                    <!-- FAQ Item 3 -->
+                    <div class="bg-card rounded-xl shadow-lg border border-gray-300 overflow-hidden">
+                        <button class="w-full text-left py-4 px-6 focus:outline-none flex justify-between items-center group">
+                            <h3 class="font-semibold text-gray-800">Can I create professional audio using AI?</h3>
+                            <span class="transform transition-transform duration-300">
+                                <svg xmlns="http://www.w3.org/2d000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 text-gray-600">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                                </svg>
+                            </span>
+                        </button>
+                        <div class="faq-answer max-h-0 overflow-hidden transition-all duration-300 ease-in-out">
+                            <p class="p-6 text-gray-600 text-sm md:text-base">
+                                Yes, absolutely! With ThinkSound's advanced audio generation technology and fine-tuning options, you can create professional-grade soundscapes that rival traditional post-production methods.
+                            </p>
+                        </div>
+                    </div>
+                    <!-- FAQ Item 4 -->
+                    <div class="bg-card rounded-xl shadow-lg border border-gray-300 overflow-hidden">
+                        <button class="w-full text-left py-4 px-6 focus:outline-none flex justify-between items-center group">
+                            <h3 class="font-semibold text-gray-800">How does AI work in converting visual to audio content?</h3>
+                            <span class="transform transition-transform duration-300">
+                                <svg xmlns="http://www.w3.org/2d000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 text-gray-600">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                                </svg>
+                            </span>
+                        </button>
+                        <div class="faq-answer max-h-0 overflow-hidden transition-all duration-300 ease-in-out">
+                            <p class="p-6 text-gray-600 text-sm md:text-base">
+                                ThinkSound's unique advantage lies in its advanced multimodal understanding that combines computer vision, natural language processing, and sound synthesis. Our AI analyzes the visual content and uses its understanding to generate contextually accurate sound.
+                            </p>
+                        </div>
+                    </div>
+                    <!-- FAQ Item 5 -->
+                    <div class="bg-card rounded-xl shadow-lg border border-gray-300 overflow-hidden">
+                        <button class="w-full text-left py-4 px-6 focus:outline-none flex justify-between items-center group">
+                            <h3 class="font-semibold text-gray-800">Can I convert video clips into automatic dialogues?</h3>
+                            <span class="transform transition-transform duration-300">
+                                <svg xmlns="http://www.w3.org/2d000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 text-gray-600">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                                </svg>
+                            </span>
+                        </button>
+                        <div class="faq-answer max-h-0 overflow-hidden transition-all duration-300 ease-in-out">
+                            <p class="p-6 text-gray-600 text-sm md:text-base">
+                                Yes, with our revolutionary video to automatic dialogue converter feature. Our technology understands the context and emotional expressions in your video to generate natural, human-like speech that perfectly aligns with the visuals.
+                            </p>
+                        </div>
+                    </div>
+                    <!-- FAQ Item 6 -->
+                    <div class="bg-card rounded-xl shadow-lg border border-gray-300 overflow-hidden">
+                        <button class="w-full text-left py-4 px-6 focus:outline-none flex justify-between items-center group">
+                            <h3 class="font-semibold text-gray-800">Can I use Gemini API for free?</h3>
+                            <span class="transform transition-transform duration-300">
+                                <svg xmlns="http://www.w3.org/2d000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 text-gray-600">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                                </svg>
+                            </span>
+                        </button>
+                        <div class="faq-answer max-h-0 overflow-hidden transition-all duration-300 ease-in-out">
+                            <p class="p-6 text-gray-600 text-sm md:text-base">
+                                Yes, the Gemini API offers a free tier for developers, allowing you to build and test applications like ThinkSound at no cost. For commercial use and higher usage, there are paid tiers available.
+                            </p>
+                        </div>
+                    </div>
+                    <!-- FAQ Item 7 -->
+                    <div class="bg-card rounded-xl shadow-lg border border-gray-300 overflow-hidden">
+                        <button class="w-full text-left py-4 px-6 focus:outline-none flex justify-between items-center group">
+                            <h3 class="font-semibold text-gray-800">What video formats and resolutions does ThinkSound support?</h3>
+                            <span class="transform transition-transform duration-300">
+                                <svg xmlns="http://www.w3.org/2d000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 text-gray-600">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                                </svg>
+                            </span>
+                        </button>
+                        <div class="faq-answer max-h-0 overflow-hidden transition-all duration-300 ease-in-out">
+                            <p class="p-6 text-gray-600 text-sm md:text-base">
+                                ThinkSound supports all major video formats including MP4, MOV, AVI, and MKV. ThinkSound handles resolutions from standard definition up to 4K and various frame rates. ThinkSound automatically optimizes processing for different video specifications while maintaining sound quality and synchronization.
+                            </p>
+                        </div>
+                    </div>
+                    <!-- FAQ Item 8 -->
+                    <div class="bg-card rounded-xl shadow-lg border border-gray-300 overflow-hidden">
+                        <button class="w-full text-left py-4 px-6 focus:outline-none flex justify-between items-center group">
+                            <h3 class="font-semibold text-gray-800">Can I customize ThinkSound's generated output?</h3>
+                            <span class="transform transition-transform duration-300">
+                                <svg xmlns="http://www.w3.org/2d000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 text-gray-600">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                                </svg>
+                            </span>
+                        </button>
+                        <div class="faq-answer max-h-0 overflow-hidden transition-all duration-300 ease-in-out">
+                            <p class="p-6 text-gray-600 text-sm md:text-base">
+                                Yes! ThinkSound offers extensive customization options including sound style preferences, environmental settings, voice characteristics for speech generation, and integration with text instructions. You can guide ThinkSound with detailed prompts to achieve specific creative visions while maintaining natural video-sound synchronization.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- About Us Section -->
+            <section id="about-us" class="py-16 hidden">
+                <div class="bg-card rounded-3xl p-8 md:p-12 shadow-lg border border-gray-300">
+                    <h2 class="text-3xl font-bold mb-6 text-gray-800">About Us</h2>
+                    <p class="text-gray-600 mb-4">
+                        At ThinkSound, we believe that creativity should be accessible to everyone. In a world of visual content, we recognized that many silent videos fail to reach their full potential, lacking the right sound and effects. This is where the idea for ThinkSound was born.
+                    </p>
+                    <p class="text-gray-600 mb-4">
+                        We are a non-profit project dedicated to transforming silent videos into vibrant content with sound and effects using the power of Artificial Intelligence (AI). We are not driven by financial gain but by a desire to provide a community service. Our sole purpose is to help creators, students, and tech enthusiasts generate professional sound and effects for their silent videos for free.
+                    </p>
+                    <p class="text-gray-600 mb-4">
+                        Are you looking for the best tool to add sound and appropriate audio effects to your videos? Have you ever wondered how to turn a silent video into professional audio content? Or maybe you were searching for a free audio generation tool? At ThinkSound, we provide the answer. We are a group of developers and AI enthusiasts, and we work on this project out of passion and a desire to contribute to the creative community.
+                    </p>
+                    <p class="text-gray-600 mb-4">
+                        Every part of this project has been built with one goal in mind: to help you be as creative as possible. We hope you find ThinkSound to be the tool that helps you bring your projects and ideas to life.
+                    </p>
+                </div>
+            </section>
+
+            <!-- Footer Section -->
+            <footer class="py-16 border-t border-gray-300 mt-12">
+                <div class="flex flex-col md:flex-row justify-between items-center md:items-start space-y-8 md:space-y-0">
+                    <div class="text-center md:text-left">
+                        <a href="#" class="text-3xl font-bold gradient-text flex items-center space-x-2 justify-center md:justify-start">
+                            <!-- أيقونة الموجات المتحركة -->
+                            <div class="sound-wave-icon">
+                                <div class="bar"></div>
+                                <div class="bar"></div>
+                                <div class="bar"></div>
+                                <div class="bar"></div>
+                            </div>
+                            <span>ThinkSound</span>
+                        </a>
+                        <p class="mt-2 text-gray-600 max-w-sm">
+                            ThinkSound is a revolutionary video conversion platform for content creation powered by advanced AI technology.
+                        </p>
+                        <!-- Social Media Links -->
+                        <div class="mt-6 flex justify-center md:justify-start space-x-4 text-gray-600">
+                            <a href="https://www.facebook.com" class="social-link"><i class="fab fa-facebook-f fa-lg"></i></a>
+                            <a href="https://www.tiktok.com" class="social-link"><i class="fab fa-tiktok fa-lg"></i></a>
+                            <a href="https://www.pinterest.com" class="social-link"><i class="fab fa-pinterest-p fa-lg"></i></a>
+                            <a href="https://x.com" class="social-link"><i class="fab fa-x-twitter fa-lg"></i></a>
+                            <a href="https://www.instagram.com" class="social-link"><i class="fab fa-instagram fa-lg"></i></a>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-2 gap-8 text-center md:text-left">
+                        <div>
+                            <h4 class="font-bold text-gray-800 mb-2">Quick Links</h4>
+                            <ul class="space-y-1 text-gray-600 text-sm">
+                                <li><a href="#features" class="hover:text-black transition-colors">Features</a></li>
+                                <li><a href="#testimonials" class="hover:text-black transition-colors">Testimonials</a></li>
+                                <li><a href="#faq" class="hover:text-black transition-colors">FAQ</a></li>
+                                <li><a href="#demo-section" class="hover:text-black transition-colors">Demo</a></li>
+                                <li><a href="#privacy-policy" class="hover:text-black transition-colors">Privacy Policy</a></li>
+                                <li><a href="#terms-of-service" class="hover:text-black transition-colors">Terms of Service</a></li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-bold text-gray-800 mb-2">Company</h4>
+                            <ul class="space-y-1 text-gray-600 text-sm">
+                                <li><a href="#about-us" class="hover:text-black transition-colors">About Us</a></li>
+                                <li><a href="mailto:domainebest@gmail.com" class="hover:text-black transition-colors">Contact</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-12 text-center text-sm text-gray-500">
+                    <p>&copy; 2025 • ThinkSound All rights reserved.</p>
+                    <p>
+                        <a href="#privacy-policy" class="hover:text-black transition-colors">Privacy Policy</a> • 
+                        <a href="#terms-of-service" class="hover:text-black transition-colors">Terms of Service</a>
+                    </p>
+                    <p class="mt-4 text-xs max-w-2xl mx-auto">
+                        Disclaimer: ThinkSound is a hobbyist-created educational platform for exploring AI tools for video conversion and sound generation. This website is built by enthusiasts for learning and experimentation purposes. The content and AI models showcased here are for educational demonstration only and should not be used for commercial purposes without proper verification. Users are responsible for ensuring appropriate usage rights for any video content they process. We encourage responsible exploration of AI technology while respecting intellectual property rights.
+                    </p>
+                </div>
+            </footer>
+            
+            <!-- Privacy Policy Section -->
+            <section id="privacy-policy" class="py-16 hidden">
+                <div class="bg-card rounded-3xl p-8 md:p-12 shadow-lg border border-gray-300">
+                    <h2 class="text-3xl font-bold mb-6 text-gray-800">Privacy Policy</h2>
+                    <p class="text-gray-600 mb-4">
+                        This Privacy Policy describes how your personal information is collected, used, and shared when you visit or use our services.
+                    </p>
+                    <h3 class="text-xl font-bold mb-2 text-gray-800">Information We Collect</h3>
+                    <p class="text-gray-600 mb-4">
+                        We do not collect any personally identifiable information from you. Your API key, if entered, is not stored on our servers. All video and text processing happens in real-time and is not saved or logged.
+                    </p>
+                    <h3 class="text-xl font-bold mb-2 text-gray-800">How We Use Your Information</h3>
+                    <p class="text-gray-600 mb-4">
+                        We do not use your information for any purpose other than providing the immediate service of video-to-sound generation.
+                    </p>
+                    <h3 class="text-xl font-bold mb-2 text-gray-800">Data Sharing</h3>
+                    <p class="text-gray-600 mb-4">
+                        We do not share any of your data with third parties.
+                    </p>
+                </div>
+            </section>
+
+            <!-- Terms of Service Section -->
+            <section id="terms-of-service" class="py-16 hidden">
+                <div class="bg-card rounded-3xl p-8 md:p-12 shadow-lg border border-gray-300">
+                    <h2 class="text-3xl font-bold mb-6 text-gray-800">Terms of Service</h2>
+                    <p class="text-gray-600 mb-4">
+                        By using the ThinkSound platform, you agree to the following terms.
+                    </p>
+                    <h3 class="text-xl font-bold mb-2 text-gray-800">User Responsibility</h3>
+                    <p class="text-gray-600 mb-4">
+                        You are solely responsible for the content you upload and for ensuring that you have all necessary rights, licenses, and permissions for the video and audio you process.
+                    </p>
+                    <h3 class="text-xl font-bold mb-2 text-gray-800">Prohibited Use</h3>
+                    <p class="text-gray-600 mb-4">
+                        You may not use this service to generate or process content that is illegal, defamatory, or infringes on the intellectual property rights of others.
+                    </p>
+                    <h3 class="text-xl font-bold mb-2 text-gray-800">Disclaimer of Warranties</h3>
+                    <p class="text-gray-600 mb-4">
+                        This service is provided "as is" and without any warranty. We make no guarantees about the accuracy, reliability, or quality of the generated audio.
+                    </p>
+                </div>
+            </section>
+
+            <!-- About Us Section -->
+            <section id="about-us" class="py-16 hidden">
+                <div class="bg-card rounded-3xl p-8 md:p-12 shadow-lg border border-gray-300">
+                    <h2 class="text-3xl font-bold mb-6 text-gray-800">About Us</h2>
+                    <p class="text-gray-600 mb-4">
+                        At ThinkSound, we believe that creativity should be accessible to everyone. In a world of visual content, we recognized that many silent videos fail to reach their full potential, lacking the right sound and effects. This is where the idea for ThinkSound was born.
+                    </p>
+                    <p class="text-gray-600 mb-4">
+                        We are a non-profit project dedicated to transforming silent videos into vibrant content with sound and effects using the power of Artificial Intelligence (AI). We are not driven by financial gain but by a desire to provide a community service. Our sole purpose is to help creators, students, and tech enthusiasts generate professional sound and effects for their silent videos for free.
+                    </p>
+                    <p class="text-gray-600 mb-4">
+                        Are you looking for the best tool to add sound and appropriate audio effects to your videos? Have you ever wondered how to turn a silent video into professional audio content? Or maybe you were searching for a free audio generation tool? At ThinkSound, we provide the answer. We are a group of developers and AI enthusiasts, and we work on this project out of passion and a desire to contribute to the creative community.
+                    </p>
+                    <p class="text-gray-600 mb-4">
+                        Every part of this project has been built with one goal in mind: to help you be as creative as possible. We hope you find ThinkSound to be the tool that helps you bring your projects and ideas to life.
+                    </p>
+                </div>
+            </section>
+    </div>
+
+    <script>
+        // Array of example data.
+        const examples = [
+            {
+                caption: "A newborn baby is sucking on a pacifier.",
+                cot: "Begin by creating a soft, steady background of light pacifier suckling. Add subtle, breathy rhythms to mimic a newborn's gentle mouth movements. Keep the sound smooth, natural, and soothing.",
+                videoUrl: "videos/pacifier_video.mp4",
+                // استبدل مسار هذه الصورة المصغرة بصورتك
+                thumbnailUrl: "images/baby_pacifier_thumbnail.jpg"
+            },
+            {
+                caption: "Someone is playing an acoustic guitar.",
+                cot: "Harmoniously, with Fingers Sliding and Pressing Strings. Start with acoustic guitar strings humming and buzzing. Include the sounds of fingers sliding and pressing the strings to match a riff. Add slight attack and decay variations to mimic playing. Mix string and finger sounds for a realistic guitar performance.",
+                videoUrl: "videos/guitar_video.mp4",
+                // استبدل مسار هذه الصورة المصغرة بصورتك
+                thumbnailUrl: "images/guitar_playing_thumbnail.jpg"
+            },
+            {
+                caption: "Someone is typing on a typewriter.",
+                cot: "Begin with the ambiance of a quiet newsroom room with a single person. Add the rhythmic sound of an old typewriter, focusing on the sharp metallic clatter of keys striking the body. Keep the texture continuous, emphasizing the tactile, metallic feedback.",
+                videoUrl: "videos/typewriter_video.mp4",
+                // استبدل مسار هذه الصورة المصغرة بصورتك
+                thumbnailUrl: "images/man_typing_thumbnail.jpg"
+            }
+        ];
+
+        // --- Helper Functions for Audio Generation ---
+
+        // Converts a base64 string to an ArrayBuffer.
+        function base64ToArrayBuffer(base64) {
+            const binaryString = window.atob(base64);
+            const len = binaryString.length;
+            const bytes = new Uint8Array(len);
+            for (let i = 0; i < len; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+            return bytes.buffer;
+        }
+
+        // Converts raw PCM data to a WAV Blob.
+        function pcmToWav(pcmData, sampleRate) {
+            const numChannels = 1;
+            const bytesPerSample = 2; // 16-bit PCM
+            const dataLength = pcmData.byteLength;
+            const buffer = new ArrayBuffer(44 + dataLength);
+            const view = new DataView(buffer);
+
+            // RIFF chunk descriptor
+            writeString(view, 0, 'RIFF');
+            view.setUint32(4, 36 + dataLength, true);
+            writeString(view, 8, 'WAVE');
+            // FMT sub-chunk
+            writeString(view, 12, 'fmt ');
+            view.setUint32(16, 16, true);
+            view.setUint16(20, 1, true); // PCM format
+            view.setUint16(22, numChannels, true);
+            view.setUint32(24, sampleRate, true);
+            view.setUint32(28, sampleRate * numChannels * bytesPerSample, true);
+            view.setUint16(32, numChannels * bytesPerSample, true);
+            view.setUint16(34, 8 * bytesPerSample, true);
+            // Data sub-chunk
+            writeString(view, 36, 'data');
+            view.setUint32(40, dataLength, true);
+
+            // Write the PCM data
+            const pcmBytes = new Uint8Array(pcmData);
+            for (let i = 0; i < dataLength; i++) {
+                view.setUint8(44 + i, pcmBytes[i]);
+            }
+
+            return new Blob([view], { type: 'audio/wav' });
+
+            function writeString(view, offset, string) {
+                for (let i = 0; i < string.length; i++) {
+                    view.setUint8(offset + i, string.charCodeAt(i));
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Event Listeners and Main Logic ---
+
+            const videoUploadInput = document.getElementById('video-upload-input');
+            const uploadButton = document.getElementById('upload-btn');
+            const videoUploadArea = document.getElementById('video-upload-area');
+            const submitButton = document.getElementById('submit-btn');
+            const clearButton = document.getElementById('clear-btn');
+            const captionInput = document.getElementById('caption');
+            const cotInput = document.getElementById('cot-description');
+            const statusMessage = document.getElementById('status-message');
+            const videoDisplayArea = document.getElementById('video-display');
+            const generatedAudio = document.getElementById('generated-audio');
+
+            // Modal elements
+            const videoModal = document.getElementById('videoModal');
+            const modalVideo = document.getElementById('modalVideo');
+            const modalCloseBtn = document.querySelector('.modal-close');
+            
+            let uploadedVideoUrl = null;
+
+            // Set up event listener for the "Click to Upload" button and the drag-and-drop area.
+            uploadButton.addEventListener('click', () => videoUploadInput.click());
+            videoUploadArea.addEventListener('click', (e) => {
+                if (e.target.id !== 'upload-btn') {
+                    videoUploadInput.click();
+                }
+            });
+
+            // Handle file selection from the hidden input.
+            videoUploadInput.addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                        uploadedVideoUrl = reader.result;
+                        displayVideo(uploadedVideoUrl);
+                        statusMessage.textContent = `Video selected: ${file.name}`;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+            
+            // Handle drag-and-drop for the video upload area.
+            videoUploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                e.target.classList.add('border-purple-500');
+            });
+
+            videoUploadArea.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                e.target.classList.remove('border-purple-500');
+            });
+
+            videoUploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                e.target.classList.remove('border-purple-500');
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    videoUploadInput.files = files;
+                    videoUploadInput.dispatchEvent(new Event('change'));
+                }
+            });
+
+            // Function to display the video in the video display area.
+            function displayVideo(videoSrc) {
+                videoDisplayArea.innerHTML = ''; // Clear existing content
+                const videoElement = document.createElement('video');
+                videoElement.src = videoSrc;
+                videoElement.controls = true;
+                videoElement.classList.add('w-full', 'h-full', 'rounded-lg');
+                videoDisplayArea.appendChild(videoElement);
+            }
+
+            // Set up event listeners for the example rows.
+            document.querySelectorAll('.interactive-example-row').forEach((card, index) => {
+                card.addEventListener('click', () => {
+                    const example = examples[index];
+                    captionInput.value = example.caption;
+                    cotInput.value = example.cot;
+                    uploadedVideoUrl = example.videoUrl;
+                    displayVideo(uploadedVideoUrl);
+                    statusMessage.textContent = `Example "${example.caption}" loaded.`;
+                });
+            });
+
+            // Function to extract a frame from a video as a base64 image
+            function extractFrame(videoElement) {
+                return new Promise((resolve) => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = videoElement.videoWidth;
+                    canvas.height = videoElement.videoHeight;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+                    // Get the image as a base64 string, removing the "data:image/jpeg;base64," prefix
+                    resolve(canvas.toDataURL('image/jpeg').split(',')[1]);
+                });
+            }
+
+            // Handle the submit button click.
+            submitButton.addEventListener('click', async () => {
+                const caption = captionInput.value;
+                const cotDescription = cotInput.value;
+                
+                const apiKey = "";
+
+                const videoElement = videoDisplayArea.querySelector('video');
+                if (!videoElement) {
+                    statusMessage.textContent = 'Please upload or select a video first.';
+                    return;
+                }
+
+                statusMessage.textContent = 'Analyzing video and generating sound... please wait.';
+                submitButton.disabled = true;
+
+                try {
+                    // Wait for video to load and then extract a frame
+                    await new Promise((resolve) => {
+                        videoElement.onloadedmetadata = resolve;
+                        if (videoElement.readyState >= 1) resolve();
+                    });
+                    const videoFrame = await extractFrame(videoElement);
+                    
+                    // 1. Generate text description based on the video frame using Gemini 2.5 Flash
+                    const multimodalPrompt = `Describe the sound that would naturally accompany this video. Provide a concise, a single line response only. If there is a caption or CoT description, incorporate that into the sound description. For example: 'A person is playing the guitar, strings are buzzing.'`;
+                    let fullPrompt = multimodalPrompt;
+                    if (caption) {
+                        fullPrompt += `\n\nCaption: ${caption}`;
+                    }
+                    if (cotDescription) {
+                        fullPrompt += `\n\nCoT Description: ${cotDescription}`;
+                    }
+
+                    const textPayload = {
+                        contents: [{
+                            parts: [
+                                { text: fullPrompt },
+                                { inlineData: { mimeType: "image/jpeg", data: videoFrame } }
+                            ]
+                        }]
+                    };
+
+                    const textApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+                    
+                    let textResponse = null;
+                    for (let i = 0; i < 3; i++) {
+                        try {
+                            textResponse = await fetch(textApiUrl, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(textPayload)
+                            });
+                            if (textResponse.status === 429) {
+                                await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
+                                continue;
+                            }
+                            if (!textResponse.ok) throw new Error(`Text API call failed: ${textResponse.status}`);
+                            break;
+                        } catch (error) { if (i === 2) throw error; }
+                    }
+
+                    const textResult = await textResponse.json();
+                    const generatedText = textResult?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+                    if (!generatedText) {
+                        statusMessage.textContent = 'Error: Could not generate a sound description from the video.';
+                        return;
+                    }
+
+                    // 2. Generate audio from the generated text using Gemini TTS
+                    const audioPrompt = `Generate a soundscape for the following description: ${generatedText}`;
+                    const audioPayload = {
+                        contents: [{
+                            parts: [{ text: audioPrompt }]
+                        }],
+                        generationConfig: {
+                            responseModalities: ["AUDIO"],
+                            speechConfig: {
+                                voiceConfig: {
+                                    prebuiltVoiceConfig: { voiceName: "Fenrir" }
+                                }
+                            }
+                        },
+                        model: "gemini-2.5-flash-preview-tts"
+                    };
+                    const audioApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`;
+
+                    let audioResponse = null;
+                    for (let i = 0; i < 3; i++) {
+                        try {
+                            audioResponse = await fetch(audioApiUrl, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(audioPayload)
+                            });
+                            if (audioResponse.status === 429) {
+                                await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
+                                continue;
+                            }
+                            if (!audioResponse.ok) throw new Error(`Audio API call failed: ${audioResponse.status}`);
+                            break;
+                        } catch (error) { if (i === 2) throw error; }
+                    }
+                    
+                    const audioResult = await audioResponse.json();
+                    const part = audioResult?.candidates?.[0]?.content?.parts?.[0];
+                    const audioData = part?.inlineData?.data;
+                    const mimeType = part?.inlineData?.mimeType;
+
+                    if (audioData && mimeType && mimeType.startsWith("audio/")) {
+                        const sampleRate = parseInt(mimeType.match(/rate=(\d+)/)[1], 10);
+                        const pcmData = base64ToArrayBuffer(audioData);
+                        const wavBlob = pcmToWav(pcmData, sampleRate);
+                        const audioUrl = URL.createObjectURL(wavBlob);
+
+                        generatedAudio.pause();
+                        generatedAudio.src = audioUrl;
+                        generatedAudio.load();
+
+                        videoElement.onplay = () => {
+                            generatedAudio.play();
+                        };
+                        videoElement.onpause = () => {
+                            generatedAudio.pause();
+                        };
+                        videoElement.onended = () => {
+                            generatedAudio.pause();
+                        };
+
+                        videoElement.play();
+                        statusMessage.textContent = 'Done! Video is playing with generated audio.';
+                    } else {
+                        statusMessage.textContent = 'Error: No audio data returned from API.';
+                        console.error('API response:', audioResult);
+                    }
+                } catch (error) {
+                    console.error('Error during audio generation:', error);
+                    statusMessage.textContent = `Error: Failed to generate audio. Details: ${error.message}`;
+                } finally {
+                    submitButton.disabled = false;
+                }
+            });
+
+            // Handle the clear button click.
+            clearButton.addEventListener('click', () => {
+                videoUploadInput.value = '';
+                captionInput.value = '';
+                cotInput.value = '';
+                uploadedVideoUrl = null;
+                statusMessage.textContent = 'Ready to upload...';
+                videoDisplayArea.innerHTML = '<i class="fas fa-video text-5xl"></i>';
+                generatedAudio.pause();
+                generatedAudio.src = '';
+            });
+            
+            // Function to toggle the display of a section based on its ID
+            function toggleSection(sectionId) {
+                const allSections = ['demo-section', 'testimonials', 'faq', 'think-sound-magic', 'privacy-policy', 'terms-of-service', 'features', 'about-us', 'contact'];
+                allSections.forEach(id => {
+                    const section = document.getElementById(id);
+                    if (section) {
+                        section.classList.add('hidden');
+                    }
+                });
+                const targetSection = document.getElementById(sectionId);
+                if (targetSection) {
+                    targetSection.classList.remove('hidden');
+                }
+            }
+
+            // Set up event listeners for navigation links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    const sectionId = this.getAttribute('href').substring(1);
+                    if (['privacy-policy', 'terms-of-service', 'about-us', 'contact'].includes(sectionId)) {
+                        e.preventDefault();
+                        toggleSection(sectionId);
+                    }
+                });
+            });
+
+            // Set up modal functionality
+            document.getElementById('hero-watch-button').addEventListener('click', () => {
+                showModal('videos/main_demo.mp4');
+            });
+            
+            document.getElementById('watch-demo-link').addEventListener('click', (e) => {
+                e.preventDefault();
+                showModal('videos/main_demo.mp4');
+            });
+            
+            document.getElementById('main-video-demo-btn').addEventListener('click', () => {
+                showModal('videos/main_demo.mp4');
+            });
+
+            document.querySelectorAll('.view-demo-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    const videoUrl = button.getAttribute('data-video-url');
+                    showModal(videoUrl);
+                });
+            });
+
+            modalCloseBtn.addEventListener('click', () => {
+                hideModal();
+            });
+
+            window.addEventListener('click', (e) => {
+                if (e.target === videoModal) {
+                    hideModal();
+                }
+            });
+
+            function showModal(videoSrc) {
+                modalVideo.src = videoSrc;
+                videoModal.style.display = 'flex';
+                modalVideo.play();
+            }
+
+            function hideModal() {
+                modalVideo.pause();
+                modalVideo.currentTime = 0;
+                videoModal.style.display = 'none';
+            }
+
+
+            document.querySelectorAll('.bg-card.rounded-xl.shadow-lg.border.border-gray-800').forEach(faqItem => {
+                faqItem.querySelector('button').addEventListener('click', () => {
+                    faqItem.classList.toggle('open');
+                    const answer = faqItem.querySelector('.faq-answer');
+                    if (faqItem.classList.contains('open')) {
+                        answer.style.maxHeight = answer.scrollHeight + 'px';
+                    } else {
+                        answer.style.maxHeight = '0';
+                    }
+                });
+            });
+        
+            const carouselTrack = document.querySelector('.carousel-track');
+            const items = document.querySelectorAll('.carousel-item');
+            const numItems = items.length / 2;
+            let currentIndex = 0;
+            const itemWidth = items[0].offsetWidth;
+
+            const scrollCarousel = () => {
+                currentIndex++;
+                if (currentIndex >= numItems) {
+                    carouselTrack.style.transition = 'none';
+                    carouselTrack.style.transform = 'translateX(0)';
+                    currentIndex = 0;
+                    setTimeout(() => {
+                        carouselTrack.style.transition = 'transform 0.5s ease-in-out';
+                        carouselTrack.style.transform = `translateX(-${currentIndex * itemWidth}px)`;
+                    }, 20);
+                } else {
+                    carouselTrack.style.transform = `translateX(-${currentIndex * itemWidth}px)`;
+                }
+            };
+            
+            setInterval(scrollCarousel, 5000);
+        });
+    </script>
+</body>
+</html>
+```
